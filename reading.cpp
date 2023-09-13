@@ -101,7 +101,7 @@ int splitBufToStrings(textArray *text)
     assert(text);
     assert(text->buffer);
 
-    text->nLines = 0;
+    text->nLines = countLines(text->buffer);
     text->ptr = (char **)calloc(text->nLines, sizeof(char *));
 
     if (text->ptr == NULL)
@@ -110,7 +110,7 @@ int splitBufToStrings(textArray *text)
     }
 
     *text->ptr++ = text->buffer;
-    text->nLines++;
+    size_t line = 1;
 
     for (size_t i = 0 ; *(text->buffer + i) != '\0'; i++)
     {
@@ -123,10 +123,10 @@ int splitBufToStrings(textArray *text)
             *text->ptr = text->buffer + i + 1;
             printf("*ptr = %p\n", *text->ptr);
             text->ptr++;
-            text->nLines++;
+            line++;
         }
     }
-    text->ptr -= text->nLines;
+    text->ptr -= line;
     return 0;
 }
 
