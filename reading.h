@@ -10,6 +10,7 @@ struct textArray
 
     char *buffer;
     char **ptr;
+    size_t *indexArray;
 };
 
 void destroyTextArray(textArray *text);
@@ -30,10 +31,10 @@ void printText(char **text, size_t nLines);
 
 void myPuts(const char *str);
 
-size_t *createIndexArr(char **text, size_t nLines);
+int createIndexArr(textArray *text);
 
-char getElement(char *buffer, size_t *indexArray, size_t bufSize, size_t nLines, size_t i, size_t j);
+char getElement(const textArray *text, size_t i, size_t j);
 
-void indexTesting(char **text, size_t nLines, size_t size);
+void indexTesting(textArray *text);
 
 #endif // READING_H

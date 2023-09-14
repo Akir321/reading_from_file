@@ -14,7 +14,7 @@ int main()
     printStr(text.buffer, text.size);
 
     putchar('\n');
-    //indexTesting(ptr, nLines, size);
+    indexTesting(&text);
     destroyTextArray(&text);
 }
 
@@ -54,6 +54,7 @@ int readTextFromFile(const char *fileName, textArray *text)
         perror("ERROR"); 
         return 1; 
     }
+    text->indexArray = NULL;
 
     return 0;
 }
@@ -174,67 +175,80 @@ void destroyTextArray(textArray *text)
 {
     assert(text);
 
-    free(text->buffer);
-    text->buffer = NULL;
+    if (text->buffer)
+    {
+        free(text->buffer);
+        text->buffer = NULL;
+    }
 
-    free(text->ptr);
-    text->ptr    = NULL;
+    if (text->ptr)
+    {
+        free(text->ptr);
+        text->ptr = NULL;
+    }
+
+    if (text->indexArray)
+    {
+        free(text->indexArray);
+        text->indexArray = NULL;
+    }
 
     text->size   = -1;
     text->nLines = -1;
 }
 
-size_t *createIndexArr(char **text, size_t nLines)
+int createIndexArr(textArray *text)
 {
     assert(text);
 
-    size_t *indexArray = (size_t *)calloc(nLines, sizeof(size_t));
-    if (indexArray == NULL)
+    text->indexArray = (size_t *)calloc(text->nLines, sizeof(size_t));
+    if (text->indexArray == NULL)
     {
-        printf("coouldn't allocate index array\n");
-        return NULL;
+        printf("couldn't allocate index array\n");
+        return 1;
     }
 
-    indexArray[0] = 0;
-    for (size_t i = 1; i < nLines; i++)
+    text->indexArray[0] = 0;
+    for (size_t i = 1; i < text->nLines; i++)
     {
-        printf("text[i] = %p, text[i - 1] = %p\n", text[i], text[i - 1]);
-        indexArray[i] = indexArray[i - 1] + (text[i] - text[i - 1]);
+        printf("text[i] = %p, text[i - 1] = %p\n", text->ptr[i], text->ptr[i - 1]);
+        text->indexArray[i] = text->indexArray[i - 1] + (text->ptr[i] - text->ptr[i - 1]);
+        //printf("indexArray[%lld] = %lld\n", i, text->indexArray[i]);
     }
 
-    return indexArray;
+    return 0;
 }
 
-char getElement(char *buffer, size_t *indexArray, size_t bufSize, size_t nLines, size_t i, size_t j)
+char getElement(const textArray *text, size_t i, size_t j)
 {
-    assert(buffer);
-    assert(indexArray);
+    assert(text->buffer);
+    assert(text->indexArray);
     
-    assert(i < nLines);
-    size_t index = indexArray[i] + j;
-    assert(index < bufSize);
-    if (i < nLines - 1)
+    assert(i < text->nLines);
+    size_t index = text->indexArray[i] + j;
+    assert(index < text->size);
+    if (i < text->nLines - 1)
     {
-        assert(index < indexArray[i + 1]);
+        assert(index < text->indexArray[i + 1]);
     }
 
-    return buffer[index];
+    return text->buffer[index];
 }
 
-void indexTesting(char **text, size_t nLines, size_t size)
+void indexTesting(textArray *text)
 {
     // index testing
-    size_t *indexArray = createIndexArr(text, nLines);
-    for (size_t i = 0; i < nLines; i++)
+
+    createIndexArr(text);
+
+    for (size_t i = 0; i < text->nLines; i++)
     {
-        printf("%lld ", indexArray[i]);
-        myPuts(text[i]);
+        printf("%lld ", text->indexArray[i]);
+        myPuts(text->ptr[i]);
     }
 
-    putchar(getElement(*text, indexArray, size, nLines, 1, 2));
-    putchar(getElement(*text, indexArray, size, nLines, 1, 3));
-    putchar(getElement(*text, indexArray, size, nLines, 1, 4));
-    putchar(getElement(*text, indexArray, size, nLines, 2, 0));
-
-    free(indexArray);
+    putchar(getElement(text, 1, 2));
+    putchar(getElement(text, 1, 3));
+    putchar(getElement(text, 1, 4));
+    putchar(getElement(text, 2, 0));
 }
